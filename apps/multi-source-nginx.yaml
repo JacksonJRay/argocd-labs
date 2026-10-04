@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multi-source-nginx
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: multi-source-demo
+  sources:
+    - repoURL: https://github.com/JacksonJRay/argocd-labs.git
+      targetRevision: HEAD
+      path: source-a
+    - repoURL: https://github.com/JacksonJRay/argocd-labs.git
+      targetRevision: HEAD
+      path: source-b
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

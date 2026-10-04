@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-a-html
+  labels:
+    app: nginx-a
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <h1>source-a</h1>
+        <p>Synced from path source-a</p>
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-a
+  labels:
+    app: nginx-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-a
+  template:
+    metadata:
+      labels:
+        app: nginx-a
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: html
+          configMap:
+            name: nginx-a-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-a
+  labels:
+    app: nginx-a
+spec:
+  selector:
+    app: nginx-a
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
